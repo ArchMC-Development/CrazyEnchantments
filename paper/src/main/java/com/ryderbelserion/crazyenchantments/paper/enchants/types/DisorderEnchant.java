@@ -1,6 +1,6 @@
-package com.ryderbelserion.crazyenchantments.enchants.types;
+package com.ryderbelserion.crazyenchantments.paper.enchants.types;
 
-import com.ryderbelserion.crazyenchantments.enchants.interfaces.CustomEnchantment;
+import com.ryderbelserion.crazyenchantments.paper.enchants.interfaces.CustomEnchantment;
 import io.papermc.paper.registry.data.EnchantmentRegistryEntry;
 import io.papermc.paper.registry.keys.tags.EnchantmentTagKeys;
 import io.papermc.paper.registry.tag.TagKey;

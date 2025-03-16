@@ -1,26 +1,28 @@
 plugins {
+    id("paper-plugin")
+
     alias(libs.plugins.runPaper)
     alias(libs.plugins.shadow)
 }
 
-repositories {
-    maven("https://papermc.io/repo/repository/maven-public/")
+project.group = "${rootProject.group}.paper"
+project.version = rootProject.version
+project.description = "Adds over 80 enchantments to your server!"
 
+repositories {
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 
     maven("https://repo.essentialsx.net/releases")
 }
 
 dependencies {
-    //compileOnly(libs.bundles.cloud.paper)
-
     compileOnly(libs.bundles.shared) {
         exclude("org.spigotmc", "spigot-api")
         exclude("org.bstats", "bstats-bukkit")
         exclude("org.bukkit", "bukkit")
     }
 
-    implementation(libs.vital.paper)
+    implementation(libs.fusion.paper)
 
     compileOnly(libs.paper)
 }
@@ -50,7 +52,7 @@ tasks {
         archiveClassifier.set("")
 
         listOf(
-            "com.ryderbelserion.vital"
+            "com.ryderbelserion.fusion"
         ).forEach {
             relocate(it, "libs.$it")
         }

@@ -1,10 +1,11 @@
-package com.ryderbelserion.crazyenchantments.loader;
+package com.ryderbelserion.crazyenchantments.paper.loader;
 
-import com.ryderbelserion.crazyenchantments.CrazyEnchantments;
-import com.ryderbelserion.crazyenchantments.enchants.EnchantmentRegistry;
-import com.ryderbelserion.crazyenchantments.enchants.interfaces.CustomEnchantment;
-import com.ryderbelserion.vital.paper.VitalPaper;
-import com.ryderbelserion.vital.paper.api.files.FileManager;
+import com.ryderbelserion.crazyenchantments.paper.CrazyEnchantments;
+import com.ryderbelserion.crazyenchantments.paper.enchants.EnchantmentRegistry;
+import com.ryderbelserion.crazyenchantments.paper.enchants.interfaces.CustomEnchantment;
+import com.ryderbelserion.fusion.core.api.enums.FileType;
+import com.ryderbelserion.fusion.core.files.FileManager;
+import com.ryderbelserion.fusion.paper.FusionApi;
 import io.papermc.paper.plugin.bootstrap.BootstrapContext;
 import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext;
@@ -26,17 +27,18 @@ import java.util.Set;
 
 public class CrazyLoader implements PluginBootstrap {
 
+    private final FusionApi api = FusionApi.get();
+
     private EnchantmentRegistry registry;
-    private VitalPaper vital;
 
     @Override
     public void bootstrap(@NotNull BootstrapContext context) {
-        this.vital = new VitalPaper(context);
+        this.api.bootstrap(context);
 
-        final FileManager fileManager = this.vital.getFileManager();
+        final FileManager fileManager = this.api.getFusion().getFileManager();
 
-        fileManager.addFile("curses.yml", "types")
-                .addFile("enchants.yml", "types")
+        fileManager.addFile("curses.yml", "types", FileType.YAML, null, false, false)
+                .addFile("enchants.yml", "types", FileType.YAML, null, false, false)
                 .init();
 
         final ComponentLogger logger = context.getLogger();

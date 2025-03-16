@@ -1,9 +1,9 @@
-package com.ryderbelserion.crazyenchantments.enchants;
+package com.ryderbelserion.crazyenchantments.paper.enchants;
 
-import com.ryderbelserion.crazyenchantments.enchants.interfaces.CustomEnchantment;
-import com.ryderbelserion.crazyenchantments.enchants.types.DisorderEnchant;
-import com.ryderbelserion.crazyenchantments.enchants.types.ViperEnchant;
-import com.ryderbelserion.crazyenchantments.utils.Methods;
+import com.ryderbelserion.crazyenchantments.paper.enchants.interfaces.CustomEnchantment;
+import com.ryderbelserion.crazyenchantments.paper.enchants.types.DisorderEnchant;
+import com.ryderbelserion.crazyenchantments.paper.enchants.types.ViperEnchant;
+import com.ryderbelserion.crazyenchantments.paper.utils.Methods;
 import com.ryderbelserion.vital.paper.api.files.CustomFile;
 import com.ryderbelserion.vital.paper.api.files.FileManager;
 import io.papermc.paper.registry.RegistryKey;

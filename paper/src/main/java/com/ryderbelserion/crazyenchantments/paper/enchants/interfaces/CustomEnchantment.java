@@ -1,4 +1,4 @@
-package com.ryderbelserion.crazyenchantments.enchants.interfaces;
+package com.ryderbelserion.crazyenchantments.paper.enchants.interfaces;
 
 import io.papermc.paper.registry.RegistryKey;
 import io.papermc.paper.registry.TypedKey;

@@ -1,4 +1,4 @@
-package com.ryderbelserion.crazyenchantments.utils;
+package com.ryderbelserion.crazyenchantments.paper.utils;
 
 import org.bukkit.configuration.ConfigurationSection;
 import java.util.List;

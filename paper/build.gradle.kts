@@ -9,6 +9,10 @@ plugins {
 
 val mcVersion: String = providers.gradleProperty("mcVersion").get()
 
+repositories {
+    configureArchRepository()
+}
+
 dependencies {
     paperweight.paperDevBundle(libs.versions.bundle)
 
@@ -25,6 +29,7 @@ dependencies {
     compileOnly(libs.worldguard)
     compileOnly(libs.worldedit)
 
+    compileOnly("net.william278.husktowns:Husktowns-paper:4.0.1")
     compileOnly(libs.oraxen.api)
 
     compileOnly(libs.informative.annotations)
@@ -116,6 +121,15 @@ tasks {
 
         filesMatching("plugin.yml") {
             expand(properties)
+        }
+    }
+}
+fun RepositoryHandler.configureArchRepository(dev: Boolean = false) {
+    maven("${property("artifactory_contextUrl")}/gradle-${if (dev) "dev" else "release"}") {
+        name = "arch"
+        credentials {
+            username = property("artifactory_user").toString()
+            password = property("artifactory_password").toString()
         }
     }
 }

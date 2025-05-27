@@ -117,6 +117,7 @@ public class PluginSupport {
 
     public void updateClaimHooks(SupportedPlugins supportedPlugin) {
         switch (supportedPlugin) {
+            case HUSK_TOWNS -> this.claimPlugin = new HuskTownsSupport();
             case GRIEF_PREVENTION -> this.claimPlugin = new GriefPreventionSupport();
             case TOWNYADVANCED -> this.claimPlugin = new TownySupport();
             case FACTIONS_UUID -> this.claimPlugin = new FactionsUUIDSupport();
@@ -155,6 +156,7 @@ public class PluginSupport {
 
         // Faction Plugins
         FACTIONS_UUID("Factions"),
+        HUSK_TOWNS("HuskTowns"),
 
         GRIEF_PREVENTION("GriefPrevention"),
 

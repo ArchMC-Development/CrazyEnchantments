@@ -58,6 +58,8 @@ config-me = { module = "ch.jalu:configme", version.ref = "config-me" }
 
 griefprevention = { module = "com.github.GriefPrevention:GriefPrevention", version.ref = "griefprevention" }
 towny = { module = "com.palmergames.bukkit.towny:towny", version.ref = "towny" }
+
+husktowns = { module = "com.palmergames.bukkit.towny:towny", version.ref = "towny" }
 factions = { module = "com.massivecraft:Factions", version.ref = "factions" }
 lands = { module = "com.github.Angeschossen:LandsAPI", version.ref = "lands" }
 

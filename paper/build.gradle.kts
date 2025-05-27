@@ -23,11 +23,13 @@ repositories {
     maven("https://maven.enginehub.org/repo")
 
     maven("https://repo.oraxen.com/releases")
+    configureArchRepository()
 }
 
 dependencies {
     paperweight.paperDevBundle(libs.versions.paper)
 
+    compileOnly("net.william278.husktowns:Husktowns-paper:4.0.1")
     compileOnly(libs.informative.annotations)
 
     compileOnly(libs.vault) {
@@ -133,6 +135,16 @@ tasks {
 
         filesMatching("plugin.yml") {
             expand(inputs.properties)
+        }
+    }
+}
+
+fun RepositoryHandler.configureArchRepository(dev: Boolean = false) {
+    maven("${property("artifactory_contextUrl")}/gradle-${if (dev) "dev" else "release"}") {
+        name = "arch"
+        credentials {
+            username = property("artifactory_user").toString()
+            password = property("artifactory_password").toString()
         }
     }
 }

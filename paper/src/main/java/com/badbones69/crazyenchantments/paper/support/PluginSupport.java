@@ -5,6 +5,7 @@ import com.badbones69.crazyenchantments.paper.Starter;
 import com.badbones69.crazyenchantments.paper.api.utils.ColorUtils;
 import com.badbones69.crazyenchantments.paper.api.utils.WorldGuardUtils;
 import com.badbones69.crazyenchantments.paper.support.claims.GriefPreventionSupport;
+import com.badbones69.crazyenchantments.paper.support.claims.HuskTownsSupport;
 import com.badbones69.crazyenchantments.paper.support.claims.LandsSupport;
 import com.badbones69.crazyenchantments.paper.support.claims.TownySupport;
 import com.badbones69.crazyenchantments.paper.support.factions.FactionsUUIDSupport;
@@ -118,6 +119,7 @@ public class PluginSupport {
 
     public void updateClaimHooks(SupportedPlugins supportedPlugin) {
         switch (supportedPlugin) {
+            case HUSK_TOWNS -> this.claimPlugin = new HuskTownsSupport();
             case GRIEF_PREVENTION -> this.claimPlugin = new GriefPreventionSupport();
             case TOWNYADVANCED -> this.claimPlugin = new TownySupport();
             case LANDS -> this.claimPlugin = new LandsSupport();
@@ -150,6 +152,7 @@ public class PluginSupport {
         FACTIONS_UUID("Factions"),
 
         GRIEF_PREVENTION("GriefPrevention"),
+        HUSK_TOWNS("HuskTowns"),
 
         // Sky Block Plugins
         SUPERIORSKYBLOCK("SuperiorSkyblock2"),

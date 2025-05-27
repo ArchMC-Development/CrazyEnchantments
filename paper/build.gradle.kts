@@ -26,8 +26,8 @@ dependencies {
         exclude("org.bukkit", "bukkit")
     }
 
-    compileOnly(libs.worldguard)
-    compileOnly(libs.worldedit)
+//    compileOnly(libs.worldguard)
+//    compileOnly(libs.worldedit)
 
     compileOnly("net.william278.husktowns:Husktowns-paper:4.0.1")
     compileOnly(libs.oraxen.api)

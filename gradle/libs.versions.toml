@@ -28,8 +28,8 @@ cluster-paper = { group = "com.ryderbelserion.cluster", name = "paper", version.
 fancy-holograms = { group = "de.oliver", name = "FancyHolograms", version = "2.0.6" }
 decent-holograms = { group = "com.github.decentsoftware-eu", name = "decentholograms", version = "2.8.6" }
 
-worldedit = { group = "com.sk89q.worldedit", name = "worldedit-bukkit", version = "7.2.15" }
-worldguard = { group = "com.sk89q.worldguard", name = "worldguard-bukkit", version = "7.1.0-SNAPSHOT" }
+#worldedit = { group = "com.sk89q.worldedit", name = "worldedit-bukkit", version = "7.2.15" }
+#worldguard = { group = "com.sk89q.worldguard", name = "worldguard-bukkit", version = "7.1.0-SNAPSHOT" }
 
 nbtapi = { group = "de.tr7zw", name = "item-nbt-api", version = "2.12.2" }
 

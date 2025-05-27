@@ -35,10 +35,6 @@ public class PluginSupport {
     private final Map<SupportedPlugins, Boolean> cachedPlugins = Maps.newHashMap();
 
     public void initializeWorldGuard() {
-        if (SupportedPlugins.WORLDGUARD.isPluginLoaded() && SupportedPlugins.WORLDEDIT.isPluginLoaded()) {
-            this.worldGuardUtils = new WorldGuardUtils();
-            this.worldGuardUtils.init();
-        }
     }
 
     public boolean inTerritory(Player player) {
@@ -70,15 +66,18 @@ public class PluginSupport {
 
     public boolean allowCombat(Location location) {
         if (SupportedPlugins.TOWNYADVANCED.isPluginLoaded()) return TownySupport.allowsCombat(location);
-        return !SupportedPlugins.WORLDEDIT.isPluginLoaded() || !SupportedPlugins.WORLDGUARD.isPluginLoaded() || this.worldGuardUtils.getWorldGuardSupport().allowsPVP(location);
+//        return !SupportedPlugins.WORLDEDIT.isPluginLoaded() || !SupportedPlugins.WORLDGUARD.isPluginLoaded() || this.worldGuardUtils.getWorldGuardSupport().allowsPVP(location);
+        return false;
     }
 
     public boolean allowDestruction(Location location) {
-        return !SupportedPlugins.WORLDEDIT.isPluginLoaded() || !SupportedPlugins.WORLDGUARD.isPluginLoaded() || this.worldGuardUtils.getWorldGuardSupport().allowsBreak(location);
+        return false;
+//        return !SupportedPlugins.WORLDEDIT.isPluginLoaded() || !SupportedPlugins.WORLDGUARD.isPluginLoaded() || this.worldGuardUtils.getWorldGuardSupport().allowsBreak(location);
     }
 
     public boolean allowExplosion(Location location) {
-        return !SupportedPlugins.WORLDEDIT.isPluginLoaded() || !SupportedPlugins.WORLDGUARD.isPluginLoaded() || this.worldGuardUtils.getWorldGuardSupport().allowsExplosions(location);
+        return false;
+//        return !SupportedPlugins.WORLDEDIT.isPluginLoaded() || !SupportedPlugins.WORLDGUARD.isPluginLoaded() || this.worldGuardUtils.getWorldGuardSupport().allowsExplosions(location);
     }
 
     public void updateHooks() {

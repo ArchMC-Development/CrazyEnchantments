@@ -32,7 +32,12 @@ import com.badbones69.crazyenchantments.paper.listeners.ScrollListener;
 import com.badbones69.crazyenchantments.paper.listeners.SlotCrystalListener;
 import com.badbones69.crazyenchantments.paper.support.CropManager;
 import com.badbones69.crazyenchantments.paper.support.interfaces.CropManagerVersion;
-import com.google.gson.Gson;
+import com.ryderbelserion.fusion.paper.FusionPaper;
+import com.ryderbelserion.fusion.paper.scheduler.FoliaScheduler;
+import com.ryderbelserion.fusion.paper.scheduler.Scheduler;
+import io.papermc.paper.datacomponent.DataComponentTypes;
+import io.papermc.paper.datacomponent.item.ItemLore;
+import io.papermc.paper.persistence.PersistentDataContainerView;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.attribute.Attribute;
@@ -41,15 +46,12 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.PermissionAttachmentInfo;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -66,6 +68,8 @@ public class CrazyManager {
 
     @NotNull
     private final CrazyEnchantments plugin = JavaPlugin.getPlugin(CrazyEnchantments.class);
+
+    private final FusionPaper fusion = this.plugin.getFusion();
     
     @NotNull
     private final Starter starter = this.plugin.getStarter();
@@ -166,10 +170,12 @@ public class CrazyManager {
 
             if (playerHealthPatch) player.getAttribute(genericAttribute).setBaseValue(baseValue);
 
-            // Loop through all players & back them up.
-            this.plugin.getServer().getAsyncScheduler().runAtFixedRate(this.plugin, task ->
-                    getCEPlayers().forEach(name ->
-                            backupCEPlayer(name.getPlayer())), 5, 5, TimeUnit.MINUTES);
+            new FoliaScheduler(this.plugin, Scheduler.global_scheduler, TimeUnit.MINUTES) {
+                @Override
+                public void run() {
+                    getCEPlayers().forEach(player -> backupCEPlayer(player.getPlayer()));
+                }
+            }.runAtFixedRate(5, 5);
         });
 
         // Invalidate cached enchants.
@@ -184,7 +190,9 @@ public class CrazyManager {
 
         ConfigurationSection headSec = heads.getConfigurationSection("HeadOdds");
 
-        if (headSec != null) {
+        if (headSec == null) {
+            this.fusion.log("warn", "HeadOdds could not be found in HeadMap.yml!");
+        } else {
             headSec.getKeys(false).forEach(id -> {
                 try {
                     Material mat = new ItemBuilder().setMaterial(id).getMaterial();
@@ -231,7 +239,8 @@ public class CrazyManager {
                 .setCategories(enchants.getStringList(path + ".Categories"))
                 .setChance(cEnchantment.getChance())
                 .setChanceIncrease(cEnchantment.getChanceIncrease())
-                .setSound(enchants.getString(path + ".Sound"));
+                .setSound(enchants.getString(path + ".Sound"))
+                .setConflicts(enchants.getStringList(path + ".Conflicts"));
 
                 if (enchants.contains(path + ".Enchantment-Type")) enchantment.setEnchantmentType(this.methods.getFromName(enchants.getString(path + ".Enchantment-Type")));
 
@@ -254,25 +263,30 @@ public class CrazyManager {
         }
 
         if (this.gkitzToggle) {
-            for (String kit : gkit.getConfigurationSection("GKitz").getKeys(false)) {
-                String path = "GKitz." + kit + ".";
-                int slot = gkit.getInt(path + "Display.Slot");
-                String time = gkit.getString(path + "Cooldown");
-                boolean autoEquip = gkit.getBoolean(path + "Auto-Equip");
+            final ConfigurationSection section = gkit.getConfigurationSection("GKitz");
 
-                ItemStack displayItem = new ItemBuilder()
-                  .setMaterial(gkit.getString(path + "Display.Item", ColorUtils.getRandomPaneColor().getName()))
-                  .setName(gkit.getString(path + "Display.Name", "Error getting name."))
-                  .setLore(gkit.getStringList(path + "Display.Lore"))
-                  .setGlow(gkit.getBoolean(path + "Display.Glowing"))
-                  .addStringPDC(DataKeys.gkit_type.getNamespacedKey(), kit)
-                .build();
+            if (section == null) {
+                this.fusion.log("warn", "The gkitz section cannot be found in gkitz.yml, It's possible the file is badly formatted!");
+            } else {
+                for (final String kit : section.getKeys(false)) {
+                    String path = "GKitz." + kit + ".";
 
-                List<String> commands = gkit.getStringList(path + "Commands");
-                List<String> itemStrings = gkit.getStringList(path + "Items");
-                List<ItemStack> previewItems = getInfoGKit(itemStrings);
-                previewItems.addAll(getInfoGKit(gkit.getStringList(path + "Fake-Items")));
-                this.gkitz.add(new GKitz(kit, slot, time, displayItem, previewItems, commands, itemStrings, autoEquip));
+                    int slot = gkit.getInt(path + "Display.Slot");
+                    String time = gkit.getString(path + "Cooldown");
+                    boolean autoEquip = gkit.getBoolean(path + "Auto-Equip");
+
+                    ItemStack displayItem = new ItemBuilder().setMaterial(gkit.getString(path + "Display.Item", ColorUtils.getRandomPaneColor().getName()))
+                            .setName(gkit.getString(path + "Display.Name", "Error getting name."))
+                            .setLore(gkit.getStringList(path + "Display.Lore"))
+                            .setGlow(gkit.getBoolean(path + "Display.Glowing", false))
+                            .addKey(DataKeys.gkit_type.getNamespacedKey(), kit).build();
+
+                    List<String> commands = gkit.getStringList(path + "Commands");
+                    List<String> itemStrings = gkit.getStringList(path + "Items");
+                    List<ItemStack> previewItems = getInfoGKit(itemStrings);
+                    previewItems.addAll(getInfoGKit(gkit.getStringList(path + "Fake-Items")));
+                    this.gkitz.add(new GKitz(kit, slot, time, displayItem, previewItems, commands, itemStrings, autoEquip));
+                }
             }
         }
 
@@ -506,41 +520,29 @@ public class CrazyManager {
         this.enchantmentBookSettings.getRegisteredEnchantments().remove(enchantment);
     }
 
-    /**
-     * @see #addEnchantments(ItemMeta, Map) 
-     */
-    public ItemStack addEnchantment(ItemStack item, CEnchantment enchantment, int level) {
+    public void addEnchantment(final ItemStack item, final CEnchantment enchantment, final int level) {
         Map<CEnchantment, Integer> enchantments = new HashMap<>();
 
         enchantments.put(enchantment, level);
 
-        return addEnchantments(item, enchantments);
+        addEnchantments(item, enchantments);
     }
 
     /**
-     * @see #addEnchantments(ItemMeta, Map) 
-     */
-    public ItemStack addEnchantments(ItemStack item, Map<CEnchantment, Integer> enchantments) {
-        item.setItemMeta(addEnchantments(item.getItemMeta(), enchantments));
-
-        return item;
-    }
-
-    /**
-     * @param meta The meta you want to add the enchantment to.
+     * @param itemStack The meta you want to add the enchantment to.
      * @param enchantments The enchantments to be added.
-     * @return The item with the enchantment on it.
      */
-    public ItemMeta addEnchantments(ItemMeta meta, Map<CEnchantment, Integer> enchantments) {
-        Gson gson = new Gson();
-        Map<CEnchantment, Integer> currentEnchantments = this.enchantmentBookSettings.getEnchantments(meta);
+    public void addEnchantments(final ItemStack itemStack, final Map<CEnchantment, Integer> enchantments) {
+        final Map<CEnchantment, Integer> currentEnchantments = this.enchantmentBookSettings.getEnchantments(itemStack);
 
-        meta = this.enchantmentBookSettings.removeEnchantments(meta, enchantments.keySet().stream().filter(currentEnchantments::containsKey).toList());
+        this.enchantmentBookSettings.removeEnchantments(itemStack, enchantments.keySet().stream().filter(currentEnchantments::containsKey).toList());
 
-        String data = meta.getPersistentDataContainer().get(DataKeys.enchantments.getNamespacedKey(), PersistentDataType.STRING);
-        Enchant enchantData = data != null ? gson.fromJson(data, Enchant.class) : new Enchant(new HashMap<>());
+        String data = itemStack.getPersistentDataContainer().get(DataKeys.enchantments.getNamespacedKey(), PersistentDataType.STRING);
+        final Enchant enchantData = data != null ? Methods.getGson().fromJson(data, Enchant.class) : new Enchant(new HashMap<>());
 
-        List<Component> oldLore = meta.lore() != null ? meta.lore() : new ArrayList<>();
+        final List<Component> lore = itemStack.lore();
+
+        final List<Component> oldLore = lore != null ? lore : new ArrayList<>();
         List<Component> newLore = new ArrayList<>();
 
         for (Entry<CEnchantment, Integer> entry : enchantments.entrySet()) {
@@ -557,38 +559,34 @@ public class CrazyManager {
         }
 
         newLore.addAll(oldLore);
-        meta.lore(newLore);
-        meta.getPersistentDataContainer().set(DataKeys.enchantments.getNamespacedKey(), PersistentDataType.STRING, gson.toJson(enchantData));
 
-        return meta;
-    }
+        itemStack.setData(DataComponentTypes.LORE, ItemLore.lore().addLines(newLore).build());
 
-    /**
-     * @see #changeEnchantmentLimiter(ItemMeta, int)
-     */
-    public ItemStack changeEnchantmentLimiter(@NotNull ItemStack item, int amount) {
-        item.setItemMeta(changeEnchantmentLimiter(item.getItemMeta(), amount));
-        return item;
+        itemStack.editPersistentDataContainer(container -> container.set(DataKeys.enchantments.getNamespacedKey(), PersistentDataType.STRING, Methods.getGson().toJson(enchantData)));
     }
 
     /**
      *
-     * @param meta The {@link ItemMeta} of the item to change.
+     * @param itemStack The {@link ItemStack} of the item to change.
      * @param amount The amount to change the stored limiter by.
-     * @return The altered {@link ItemMeta}.
+     * @return The altered {@link ItemStack}.
      */
-    public ItemMeta changeEnchantmentLimiter(@NotNull ItemMeta meta, int amount) {
-        PersistentDataContainer container = meta.getPersistentDataContainer();
-        int newAmount = container.getOrDefault(DataKeys.limit_reducer.getNamespacedKey(), PersistentDataType.INTEGER, 0);
-        newAmount += amount;
+    public ItemStack changeEnchantmentLimiter(@NotNull final ItemStack itemStack, final int amount) {
+        final PersistentDataContainerView view = itemStack.getPersistentDataContainer();
 
-        if (newAmount == 0) {
-            container.remove(DataKeys.limit_reducer.getNamespacedKey());
-        } else {
-            container.set(DataKeys.limit_reducer.getNamespacedKey(), PersistentDataType.INTEGER, newAmount);
-        }
+        int type = view.getOrDefault(DataKeys.limit_reducer.getNamespacedKey(), PersistentDataType.INTEGER, 0);
 
-        return meta;
+        final int newAmount = type += amount; //todo() this needs to be tested.
+
+        itemStack.editPersistentDataContainer(container -> {
+            if (newAmount == 0) {
+                container.remove(DataKeys.limit_reducer.getNamespacedKey());
+            } else {
+                container.set(DataKeys.limit_reducer.getNamespacedKey(), PersistentDataType.INTEGER, newAmount);
+            }
+        });
+
+        return itemStack;
     }
 
     /**
@@ -598,7 +596,7 @@ public class CrazyManager {
      */
     public int getEnchantmentLimiter(@NotNull ItemStack item) {
         if (!useEnchantmentLimiter) return 0;
-        return item.getItemMeta().getPersistentDataContainer().getOrDefault(DataKeys.limit_reducer.getNamespacedKey(), PersistentDataType.INTEGER, 0);
+        return item.getPersistentDataContainer().getOrDefault(DataKeys.limit_reducer.getNamespacedKey(), PersistentDataType.INTEGER, 0);
     }
 
     /**
@@ -943,7 +941,7 @@ public class CrazyManager {
             itemBuilder.getLore().addAll(0, customEnchantments.stream().map(ColorUtils::legacyTranslateColourCodes).toList());
             itemBuilder.setEnchantments(enchantments);
 
-            items.add(itemBuilder.addStringPDC(DataKeys.random_number.getNamespacedKey(), String.valueOf(methods.getRandomNumber(0, Integer.MAX_VALUE))).build());
+            items.add(itemBuilder.addKey(DataKeys.random_number.getNamespacedKey(), String.valueOf(methods.getRandomNumber(0, Integer.MAX_VALUE))).build());
             // This is done so items do not stack if there are multiple of the same.
         }
 

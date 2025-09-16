@@ -14,6 +14,7 @@ import com.badbones69.crazyenchantments.paper.api.events.PreBookApplyEvent;
 import com.badbones69.crazyenchantments.paper.api.objects.CEBook;
 import com.badbones69.crazyenchantments.paper.api.objects.CEnchantment;
 import com.badbones69.crazyenchantments.paper.controllers.settings.EnchantmentBookSettings;
+import com.ryderbelserion.fusion.paper.scheduler.FoliaScheduler;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -86,12 +87,19 @@ public class EnchantmentControl implements Listener {
 
             if (preApplyEvent.getSuccessful()) {
                 if (!methods.isEventCancelled(new BookApplyEvent(player, item, ceBook))) {
-                    event.setCurrentItem(crazyManager.addEnchantment(item, enchantment, ceBook.getLevel()));
+                    final ItemStack clone = item.clone();
+
+                    this.crazyManager.addEnchantment(clone, enchantment, ceBook.getLevel());
+
+                    event.setCurrentItem(clone);
+
                     player.setItemOnCursor(null);
+
                     player.sendMessage(Messages.ENCHANTMENT_UPGRADE_SUCCESS.getMessage(new HashMap<>(){{
                         put("%Enchantment%", enchantment.getCustomName());
                         put("%Level%", String.valueOf(ceBook.getLevel()));
                     }}));
+
                     player.playSound(player.getLocation(), enchantment.getSound(), 1, 1);
                     // ToDo potentially add pitch and volume options.
                 }
@@ -139,12 +147,26 @@ public class EnchantmentControl implements Listener {
             return;
         }
 
+        for (CEnchantment enchant : enchantments.keySet()) {
+            if (enchant.conflictsWith(enchantment)) {
+                player.sendMessage(Messages.CONFLICTING_ENCHANT.getMessage());
+                return;
+            }
+        }
+
         event.setCancelled(true);
 
         if (preApplyEvent.getSuccessful()) {
-            event.setCurrentItem(crazyManager.addEnchantment(item, enchantment, ceBook.getLevel()));
+            final ItemStack clone = item.clone();
+
+            this.crazyManager.addEnchantment(clone, enchantment, ceBook.getLevel());
+
+            event.setCurrentItem(clone);
+
             player.setItemOnCursor(null);
+
             player.sendMessage(Messages.BOOK_WORKS.getMessage());
+
             player.playSound(player.getLocation(), enchantment.getSound(), 1, 1);
 
             return;
@@ -201,7 +223,11 @@ public class EnchantmentControl implements Listener {
 
         if (event.getItem().getType() != Material.MILK_BUCKET) return;
 
-        player.getScheduler().runDelayed(plugin, playerTask -> crazyManager.updatePlayerEffects(player), null, 5);
-
+        new FoliaScheduler(this.plugin, null, player) {
+            @Override
+            public void run() {
+                crazyManager.updatePlayerEffects(player);
+            }
+        }.runDelayed(5);
     }
 }

@@ -5,6 +5,7 @@ authors:
   - ryderbelserion
   - BadBones69
   - TDL
+  - Max
 
 version: '${version}'
 api-version: '${minecraft}'

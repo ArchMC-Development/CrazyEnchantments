@@ -113,12 +113,14 @@ tasks {
     }
 
     processResources {
-        inputs.properties("name" to rootProject.name)
-        inputs.properties("version" to project.version)
-        inputs.properties("group" to "${project.group}.paper")
-        inputs.properties("description" to project.description)
-        inputs.properties("apiVersion" to libs.versions.minecraft.get())
-        inputs.properties("website" to "https://modrinth.com/plugin/crazyenchantments")
+        inputs.properties(mapOf(
+            "name" to rootProject.name,
+            "version" to project.version,
+            "group" to "${project.group}.paper",
+            "description" to project.description,
+            "apiVersion" to libs.versions.minecraft.get(),
+            "website" to "https://modrinth.com/plugin/crazyenchantments"
+        ))
 
         filesMatching("plugin.yml") {
             expand(inputs.properties)
